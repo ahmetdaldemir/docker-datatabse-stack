@@ -1,0 +1,139 @@
+# Production Configuration for Global Database Stack
+# This file extends the base docker-compose.yml with production-specific settings
+
+services:
+  # MySQL 8.0 - Production
+  mysql:
+    environment:
+      # Override with production values
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+    # Remove GUI ports in production
+    ports:
+      - "${MYSQL_PORT:-3306}:3306"
+    # Production MySQL config
+    command: >
+      --default-authentication-plugin=mysql_native_password
+      --innodb-buffer-pool-size=1G
+      --max-connections=500
+      --slow-query-log=1
+      --slow-query-log-file=/var/log/mysql/slow.log
+      --long-query-time=2
+    # Resource limits for production
+    deploy:
+      resources:
+        limits:
+          memory: 2G
+        reservations:
+          memory: 1G
+
+  # PostgreSQL 16 - Production
+  postgres:
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    # Production PostgreSQL config
+    command: >
+      postgres
+      -c max_connections=200
+      -c shared_buffers=256MB
+      -c effective_cache_size=1GB
+      -c maintenance_work_mem=64MB
+      -c checkpoint_completion_target=0.9
+      -c wal_buffers=16MB
+      -c default_statistics_target=100
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+        reservations:
+          memory: 512M
+
+  # Redis - Production
+  redis:
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    # Production Redis config
+    command: >
+      redis-server
+      --appendonly yes
+      --requirepass ${REDIS_PASSWORD}
+      --maxmemory 512mb
+      --maxmemory-policy allkeys-lru
+      --save 900 1
+      --save 300 10
+      --save 60 10000
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+        reservations:
+          memory: 256M
+
+  # MongoDB - Production
+  mongodb:
+    ports:
+      - "${MONGO_PORT:-27017}:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_ROOT_USERNAME}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_ROOT_PASSWORD}
+      MONGO_INITDB_DATABASE: ${MONGO_DATABASE}
+    # Production MongoDB config
+    command: >
+      mongod
+      --auth
+      --bind_ip_all
+      --logpath /var/log/mongodb/mongod.log
+      --logappend
+    deploy:
+      resources:
+        limits:
+          memory: 2G
+        reservations:
+          memory: 1G
+
+  # Elasticsearch - Production
+  elasticsearch:
+    ports:
+      - "${ELASTICSEARCH_HTTP_PORT:-9200}:9200"
+      - "${ELASTICSEARCH_TRANSPORT_PORT:-9300}:9300"
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=true
+      - "ES_JAVA_OPTS=${ES_JAVA_OPTS:--Xms1g -Xmx1g}"
+    deploy:
+      resources:
+        limits:
+          memory: 2G
+        reservations:
+          memory: 1G
+
+  # Remove GUI services in production
+  redis-commander:
+    profiles:
+      - gui
+    ports:
+      - "${REDIS_COMMANDER_PORT:-8082}:8081"
+
+  mongo-express:
+    profiles:
+      - gui
+    ports:
+      - "${MONGO_EXPRESS_PORT:-8083}:8081"
+
+  phpmyadmin:
+    profiles:
+      - gui
+    ports:
+      - "${PHPMYADMIN_PORT:-8081}:80"
+
+  adminer:
+    profiles:
+      - gui
+    ports:
+      - "${ADMINER_PORT:-8084}:8080"
