@@ -67,11 +67,16 @@ docker-compose restart
 ```
 Host: localhost
 Port: 3306
-Database: dev_db
+Database: dev_db (ve istediğiniz herhangi bir database)
 User: dev_user
 Password: dev_pass
 Root Password: root
 ```
+
+**Özellikler:**
+- ✅ `dev_user` tüm database'leri oluşturabilir
+- ✅ `dev_user` tüm database'leri silebilir
+- ✅ `dev_user` tüm tabloları yönetebilir
 
 **Laravel .env:**
 ```env
@@ -89,10 +94,16 @@ DB_PASSWORD=dev_pass
 ```
 Host: localhost
 Port: 5432
-Database: dev_db
+Database: dev_db (ve istediğiniz herhangi bir database)
 User: dev_user
 Password: dev_pass
 ```
+
+**Özellikler:**
+- ✅ `dev_user` superuser yetkilerine sahip
+- ✅ `dev_user` tüm database'leri oluşturabilir
+- ✅ `dev_user` tüm database'leri silebilir
+- ✅ `dev_user` tüm tabloları yönetebilir
 
 **Laravel .env:**
 ```env
@@ -126,14 +137,25 @@ REDIS_PORT=6379
 ```
 Host: localhost
 Port: 27017
-Database: dev_db
+Database: dev_db (ve istediğiniz herhangi bir database)
 Admin User: admin
 Admin Password: admin_pass
+Dev User: dev_user
+Dev Password: dev_pass
 ```
 
-**Connection String:**
+**Özellikler:**
+- ✅ `admin` kullanıcısı tüm database'leri yönetebilir
+- ✅ `dev_user` kendi database'lerini yönetebilir
+- ✅ Her iki kullanıcı da yeni database'ler oluşturabilir
+
+**Connection Strings:**
 ```
+# Admin kullanıcısı (tam yetki)
 mongodb://admin:admin_pass@localhost:27017/dev_db?authSource=admin
+
+# Dev kullanıcısı (sınırlı yetki)
+mongodb://dev_user:dev_pass@localhost:27017/dev_db?authSource=dev_db
 ```
 
 ---
@@ -153,12 +175,35 @@ http://localhost:9200
 
 ## 🖥️ Web Arayüzleri
 
-| Servis | URL | Açıklama |
-|--------|-----|----------|
-| **phpMyAdmin** | http://localhost:8081 | MySQL yönetimi |
-| **Redis Commander** | http://localhost:8082 | Redis yönetimi |
-| **Mongo Express** | http://localhost:8083 | MongoDB yönetimi |
-| **Adminer** | http://localhost:8084 | Tüm DB'ler için |
+| Servis | URL | Açıklama | Giriş Bilgileri |
+|--------|-----|----------|-----------------|
+| **phpMyAdmin** | http://localhost:8081 | MySQL yönetimi | dev_user / dev_pass |
+| **Redis Commander** | http://localhost:8082 | Redis yönetimi | Password: dev_pass |
+| **Mongo Express** | http://localhost:8083 | MongoDB yönetimi | admin / admin_pass |
+| **Adminer** | http://localhost:8084 | Tüm DB'ler için | dev_user / dev_pass |
+
+### 🔑 Database Manager Giriş Bilgileri
+
+**phpMyAdmin (MySQL):**
+- Server: mysql
+- Username: dev_user
+- Password: dev_pass
+
+**Adminer (Universal):**
+- System: MySQL
+- Server: mysql
+- Username: dev_user
+- Password: dev_pass
+- Database: dev_db
+
+**Redis Commander:**
+- Host: redis
+- Port: 6379
+- Password: dev_pass
+
+**Mongo Express:**
+- Username: admin
+- Password: admin_pass
 
 ---
 
@@ -166,20 +211,53 @@ http://localhost:9200
 
 ### Yeni Database Oluşturma
 
-**MySQL:**
+**MySQL (dev_user ile):**
 ```bash
-docker-compose exec mysql mysql -u root -proot -e "CREATE DATABASE yeni_db;"
+# dev_user ile yeni database oluştur
+docker-compose exec mysql mysql -u dev_user -pdev_pass -e "CREATE DATABASE yeni_db;"
+
+# Database'i sil
+docker-compose exec mysql mysql -u dev_user -pdev_pass -e "DROP DATABASE yeni_db;"
 ```
 
-**PostgreSQL:**
+**PostgreSQL (dev_user ile):**
 ```bash
-docker-compose exec postgres createdb -U dreampos_user yeni_db
+# dev_user ile yeni database oluştur
+docker-compose exec postgres createdb -U dev_user yeni_db
+
+# Database'i sil
+docker-compose exec postgres dropdb -U dev_user yeni_db
 ```
 
-**MongoDB:**
+**MongoDB (admin ile):**
 ```bash
-docker-compose exec mongodb mongosh -u admin -p admin_pass --eval "use yeni_db"
+# admin ile yeni database oluştur
+docker-compose exec mongodb mongosh -u admin -p admin_pass --authenticationDatabase admin --eval "use yeni_db; db.test_collection.insertOne({test: 'data'});"
+
+# Database'i sil
+docker-compose exec mongodb mongosh -u admin -p admin_pass --authenticationDatabase admin --eval "use yeni_db; db.dropDatabase();"
 ```
+
+### 🎯 Database Manager'lar ile Oluşturma
+
+**phpMyAdmin ile:**
+1. http://localhost:8081 adresine git
+2. dev_user / dev_pass ile giriş yap
+3. "Databases" sekmesine tıkla
+4. "Create database" butonuna tıkla
+5. Database adını gir ve "Create" butonuna tıkla
+
+**Adminer ile:**
+1. http://localhost:8084 adresine git
+2. MySQL seç, dev_user / dev_pass ile giriş yap
+3. "Create database" linkine tıkla
+4. Database adını gir ve oluştur
+
+**Mongo Express ile:**
+1. http://localhost:8083 adresine git
+2. admin / admin_pass ile giriş yap
+3. "Create Database" butonuna tıkla
+4. Database adını gir ve oluştur
 
 ---
 
