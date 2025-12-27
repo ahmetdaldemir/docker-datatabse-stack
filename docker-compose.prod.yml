@@ -2,33 +2,6 @@
 # This file extends the base docker-compose.yml with production-specific settings
 
 services:
-  # MySQL 8.0 - Production
-  mysql:
-    environment:
-      # Override with production values
-      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
-      MYSQL_DATABASE: ${MYSQL_DATABASE}
-      MYSQL_USER: ${MYSQL_USER}
-      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
-    # Remove GUI ports in production
-    ports:
-      - "${MYSQL_PORT:-3306}:3306"
-    # Production MySQL config
-    command: >
-      --default-authentication-plugin=mysql_native_password
-      --innodb-buffer-pool-size=1G
-      --max-connections=500
-      --slow-query-log=1
-      --slow-query-log-file=/var/log/mysql/slow.log
-      --long-query-time=2
-    # Resource limits for production
-    deploy:
-      resources:
-        limits:
-          memory: 2G
-        reservations:
-          memory: 1G
-
   # PostgreSQL 16 - Production
   postgres:
     environment:
@@ -125,12 +98,6 @@ services:
       - gui
     ports:
       - "${MONGO_EXPRESS_PORT:-8083}:8081"
-
-  phpmyadmin:
-    profiles:
-      - gui
-    ports:
-      - "${PHPMYADMIN_PORT:-8081}:80"
 
   adminer:
     profiles:

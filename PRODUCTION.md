@@ -27,8 +27,7 @@ nano .env
 
 ```bash
 # Güçlü şifre örnekleri (kendi şifrelerinizi oluşturun)
-MYSQL_ROOT_PASSWORD=YourVeryStrongRootPassword123!
-MYSQL_PASSWORD=YourStrongUserPassword456!
+# MySQL removed - using PostgreSQL only
 POSTGRES_PASSWORD=YourStrongPostgresPassword789!
 REDIS_PASSWORD=YourStrongRedisPassword012!
 MONGO_ROOT_PASSWORD=YourStrongMongoPassword345!
@@ -137,7 +136,7 @@ docker-compose exec elasticsearch curl -f http://localhost:9200/_cluster/health
 docker-compose logs -f
 
 # Belirli bir servisin loglarını izle
-docker-compose logs -f mysql
+docker-compose logs -f postgres
 docker-compose logs -f postgres
 docker-compose logs -f redis
 ```
@@ -145,8 +144,8 @@ docker-compose logs -f redis
 ### Backup
 
 ```bash
-# MySQL Backup
-docker-compose exec mysql mysqldump -u root -p${MYSQL_ROOT_PASSWORD} ${MYSQL_DATABASE} > backup_mysql_$(date +%Y%m%d_%H%M%S).sql
+# PostgreSQL Backup
+docker-compose exec postgres pg_dump -U ${POSTGRES_USER} ${POSTGRES_DB} > backup_postgres_$(date +%Y%m%d_%H%M%S).sql
 
 # PostgreSQL Backup
 docker-compose exec postgres pg_dump -U ${POSTGRES_USER} ${POSTGRES_DB} > backup_postgres_$(date +%Y%m%d_%H%M%S).sql

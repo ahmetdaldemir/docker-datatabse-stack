@@ -7,17 +7,7 @@ echo "🧪 Database Permissions Test"
 echo "=========================="
 echo ""
 
-# MySQL Test
-echo "📊 Testing MySQL permissions..."
-echo "Creating test database in MySQL..."
-docker-compose exec mysql mysql -u dev_user -pdev_pass -e "CREATE DATABASE IF NOT EXISTS test_mysql_db;"
-if [ $? -eq 0 ]; then
-    echo "✅ MySQL: dev_user can create databases"
-    docker-compose exec mysql mysql -u dev_user -pdev_pass -e "DROP DATABASE test_mysql_db;"
-    echo "✅ MySQL: dev_user can drop databases"
-else
-    echo "❌ MySQL: dev_user cannot create databases"
-fi
+# MySQL removed - using PostgreSQL only
 echo ""
 
 # PostgreSQL Test
@@ -71,13 +61,11 @@ echo ""
 echo "🎉 Permission tests completed!"
 echo ""
 echo "💡 Database Manager Access:"
-echo "   phpMyAdmin:     http://localhost:8081"
 echo "   Adminer:        http://localhost:8084"
 echo "   Redis Commander: http://localhost:8082"
 echo "   Mongo Express:  http://localhost:8083"
 echo ""
 echo "🔑 Connection Details:"
-echo "   MySQL:       dev_user / dev_pass"
 echo "   PostgreSQL:  dev_user / dev_pass"
 echo "   MongoDB:     dev_user / dev_pass"
 echo "   Redis:       Password: dev_pass"

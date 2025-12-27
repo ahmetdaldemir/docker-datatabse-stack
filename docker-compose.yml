@@ -1,30 +1,5 @@
 
 services:
-  # MySQL 8.0
-  mysql:
-    image: mysql:8.0
-    container_name: global_mysql
-    restart: unless-stopped
-    ports:
-      - "${MYSQL_PORT:-3306}:3306"
-    environment:
-      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-root}
-      MYSQL_DATABASE: ${MYSQL_DATABASE:-dev_db}
-      MYSQL_USER: ${MYSQL_USER:-dev_user}
-      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-dev_pass}
-      MYSQL_GRANT_ALL: "yes"
-    volumes:
-      - mysql_data:/var/lib/mysql
-      - ./mysql/my.cnf:/etc/mysql/conf.d/my.cnf
-      - ./mysql/init.sql:/docker-entrypoint-initdb.d/init.sql
-    command: --default-authentication-plugin=mysql_native_password
-    healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${MYSQL_ROOT_PASSWORD:-root}"]
-      timeout: 20s
-      retries: 10
-    networks:
-      - global_databases_net
-
   # PostgreSQL 16
   postgres:
     image: postgres:16-alpine
@@ -137,21 +112,6 @@ services:
     networks:
       - global_databases_net
 
-  # phpMyAdmin (MySQL GUI)
-  phpmyadmin:
-    image: phpmyadmin:latest
-    container_name: global_phpmyadmin
-    restart: unless-stopped
-    ports:
-      - "${PHPMYADMIN_PORT:-8081}:80"
-    environment:
-      PMA_HOST: mysql
-      PMA_PORT: 3306
-    depends_on:
-      - mysql
-    networks:
-      - global_databases_net
-
   # Adminer (Universal DB GUI)
   adminer:
     image: adminer:latest
@@ -160,7 +120,29 @@ services:
     ports:
       - "${ADMINER_PORT:-8084}:8080"
     environment:
-      ADMINER_DEFAULT_SERVER: mysql
+      ADMINER_DEFAULT_SERVER: postgres
+    networks:
+      - global_databases_net
+
+  # RabbitMQ (Message Queue)
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    container_name: global_rabbitmq
+    restart: unless-stopped
+    ports:
+      - "${RABBITMQ_PORT:-5672}:5672"      # AMQP port
+      - "${RABBITMQ_MANAGEMENT_PORT:-15672}:15672"  # Management UI port
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER:-admin}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD:-admin_pass}
+      RABBITMQ_DEFAULT_VHOST: ${RABBITMQ_VHOST:-/}
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
     networks:
       - global_databases_net
 
@@ -170,8 +152,6 @@ networks:
     name: ${NETWORK_NAME:-global_databases_network}
 
 volumes:
-  mysql_data:
-    driver: local
   postgres_data:
     driver: local
   redis_data:
@@ -181,5 +161,7 @@ volumes:
   mongodb_config:
     driver: local
   elasticsearch_data:
+    driver: local
+  rabbitmq_data:
     driver: local
 

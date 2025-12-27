@@ -19,13 +19,11 @@ docker-compose ps
 
 echo ""
 echo "🌐 Web Arayüzleri:"
-echo "   - phpMyAdmin (MySQL):     http://localhost:8081"
 echo "   - Redis Commander:        http://localhost:8082"
 echo "   - Mongo Express:          http://localhost:8083"
 echo "   - Adminer (Tüm DB'ler):   http://localhost:8084"
 echo ""
 echo "📝 Bağlantı Bilgileri:"
-echo "   MySQL:         localhost:3306"
 echo "   PostgreSQL:    localhost:5432"
 echo "   Redis:         localhost:6379"
 echo "   MongoDB:       localhost:27017"

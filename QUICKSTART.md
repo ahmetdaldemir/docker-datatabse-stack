@@ -32,7 +32,6 @@ docker-compose -f docker-compose.dev.yml exec app php artisan migrate
 ## ✅ Hazır!
 
 - **Web:** http://localhost:8080
-- **phpMyAdmin:** http://localhost:8081
 - **Redis Commander:** http://localhost:8082
 - **Mongo Express:** http://localhost:8083
 - **Adminer:** http://localhost:8084
